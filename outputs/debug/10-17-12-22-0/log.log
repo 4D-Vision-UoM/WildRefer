@@ -1,0 +1,2 @@
+Namespace(batch_size=16, butd=False, dataset='strefer', debug=False, dynamic=True, epochs=100, frame_num=3, img_size=384, lr=0.0001, lr_backbone=0.001, lr_step=[45, 80], max_lang_num=50, max_obj_num=100, num_decoder_layers=6, num_queries=256, num_workers=8, pretrain='', seed=42, text_encoder_lr=1e-05, val_epoch=1, verbose_step=10, warmup_epoch=-1, work_dir='outputs/debug')
+TRN Epoch[1|100][0|275] loss=159.1541 lr=0.0001

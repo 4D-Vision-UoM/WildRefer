@@ -23,7 +23,7 @@ setup(
             sources=_ext_sources,
             extra_compile_args={
                 "cxx": ["-O2", "-I{}".format("{}/include".format(_ext_src_root))],
-                "nvcc": ["-O2", "-I{}".format("{}/include".format(_ext_src_root))],
+                "nvcc": ["-O2", "-I{}".format("{}/include".format(_ext_src_root)), "-allow-unsupported-compiler"],
             },
             include_dirs=[osp.join(this_dir, _ext_src_root, "include")],
         )
