@@ -130,6 +130,8 @@ def loc_pc2img(points, ex_matrix, in_matrix):
     points_T = np.transpose(points)
     points_T[3, :] = 1.0
 
+    print("[DEBUG] points_T: ", points_T)
+
     # lidar2camera
     points_T_camera = np.dot(ex_matrix, points_T)
     # camera2pixel

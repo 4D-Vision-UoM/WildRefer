@@ -166,11 +166,10 @@ def evaluate(ep, model, dataset, dataloader, criterion, set_criterion, epochs, l
 
     info = f"{name} Epoch[{ep}] Acc25={acc25} Acc50={acc50} mIoU={m_iou} loss={round(loss.item(), 4)}"
     print(info)
-    logger(info)
-    logger.tf_log(f"{name}/Acc25", acc25, ep)
-    logger.tf_log(f"{name}/Acc50", acc50, ep)
-    logger.tf_log(f"{name}/mIoU", m_iou, ep)
-    logger.tf_log(f"{name}/loss", loss, ep)
+    print(f"{name}/Acc25", acc25, ep)
+    print(f"{name}/Acc50", acc50, ep)
+    print(f"{name}/mIoU", m_iou, ep)
+    print(f"{name}/loss", loss, ep)
 
     if name == 'EVAL' and acc25 > best_score:
         logger.save_model(model, f"best_model.pth")
@@ -224,16 +223,30 @@ def main(args):
             milestones=[(m - args.warmup_epoch) * len(train_loader) for m in args.lr_step])
     criterion, set_criterion = get_criterion()
 
+    from test import evaluate as test_evaluate
+
+    test_dataset = create_dataset(args, 'test')
+    generator = torch.Generator()
+    test_loader = DataLoader(test_dataset, args.batch_size, shuffle=False, num_workers=args.num_workers, generator=generator)
+
     best_score = -1
     start_epoch = 0
     model.cuda()
     print("Start to train the model")
     for i in range(start_epoch, args.epochs):
+        ignore = False
         ep = i + 1
-        train_one_epoch(ep, train_loader, model, criterion, set_criterion, optimizer, scheduler, args.epochs, logger, args.verbose_step)
-        if ep % 1 == 0:
-            logger.save_model(model, f"epoch_{ep}_model.pth", epoch=ep, best_score=best_score,\
-                                criterion=criterion, optimizer=optimizer, scheduler=scheduler)
+        if not ignore:
+            
+            train_one_epoch(ep, train_loader, model, criterion, set_criterion, optimizer, scheduler, args.epochs, logger, args.verbose_step)
+            if ep % 5 == 0:
+                logger.save_model(model, f"epoch_{ep}_model.pth", epoch=ep, best_score=best_score,\
+                                    criterion=criterion, optimizer=optimizer, scheduler=scheduler)
+                        
+    
+        print("[DEBUG] Evaluate the model")
+        test_evaluate(args, model, test_dataset, test_loader)
+
     return
 
 if __name__ == '__main__':

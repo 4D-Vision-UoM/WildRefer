@@ -74,8 +74,8 @@ class STReferDataset(Dataset):
         for _ in range(1, self.frame_num):
             if point_cloud_name:
                 point_cloud_name = self.find_previous[scene_id][point_cloud_name]
-                image_name = self.points2image[scene_id][point_cloud_name]
             if point_cloud_name:
+                image_name = self.points2image[scene_id][point_cloud_name]
                 scene_file = os.path.join(SRC_PATH, 'points_rgbd', scene_id, f"{point_cloud_name}.npy")
                 add_scene = np.load(scene_file)
                 add_scene[:, 3:6] = add_scene[:, 3:6] / 255.

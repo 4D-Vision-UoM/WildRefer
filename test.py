@@ -105,6 +105,10 @@ def evaluate(args, model, dataset, dataloader):
 def main(args):
     set_random_seed(args.seed)
 
+    print(args.seed)
+    from pprint import pprint
+    print("args")
+    pprint(args)
     print("Create Dataset")
     test_dataset = create_dataset(args, 'test')
     generator = torch.Generator()
@@ -112,6 +116,11 @@ def main(args):
 
     print("Create Model")
     model = create_model(args)
+
+    with open("Model_architecture.txt", "w") as f:
+        f.write(str(model))
+
+    import sys;exit()
     model.load_state_dict(torch.load(args.pretrain, map_location='cpu')['model'], strict=True)
 
     model.cuda()

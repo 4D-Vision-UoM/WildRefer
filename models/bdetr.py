@@ -190,11 +190,13 @@ class BeaUTyDETR(nn.Module):
         # Init
         self.init_bn_momentum()
 
-    def _run_backbones(self, inputs):
+    def _run_backbones(self, inputs, DEBUG=False):
         """Run visual and text backbones."""
         # Visual encoder
+         
+            
         point_clouds = inputs['point_clouds']
-        B, K, N, C = point_clouds.shape
+        B, K, N, C = point_clouds.shape # what is K? here
         point_clouds = point_clouds.view(B*K, N, C)
         if self.args.lr_backbone > 0:
             end_points = self.point_backbone_net(point_clouds, end_points={})
@@ -275,7 +277,7 @@ class BeaUTyDETR(nn.Module):
         end_points['query_points_sample_inds'] = sample_inds  # (B, V)
         return end_points
 
-    def forward(self, inputs):
+    def forward(self, inputs, DEBUG=True):
         """
         Forward pass.
         Args:
@@ -291,9 +293,13 @@ class BeaUTyDETR(nn.Module):
         Returns:
             end_points: dict
         """
+
+
+         
             
+        
         # Within-modality encoding
-        end_points = self._run_backbones(inputs)
+        end_points = self._run_backbones(inputs, DEBUG)
         
         points_xyz = end_points['fp2_xyz']  # (B, points, 3)
         points_features = end_points['fp2_features']  # (B, F, points)
@@ -304,6 +310,8 @@ class BeaUTyDETR(nn.Module):
         # Point Multi-Fuser
         additional_points_xyz = end_points['additional_seed_xyz']
         additional_points_features = end_points['additional_seed_features']
+         
+            
         for i in range(self.multi_fuser_layers):
             points_features = self.multi_fuser[i](
                 query=points_features.transpose(1, 2).contiguous(),
@@ -339,11 +347,16 @@ class BeaUTyDETR(nn.Module):
         if self.butd:
             # attend on those features
             detected_mask = ~inputs['det_bbox_label_mask']      # [111000] -> [000111]
+
+             
+                
             detected_feats =  self.box_embeddings(inputs['det_boxes']).transpose(1, 2).contiguous()
         else:
             detected_mask = None
             detected_feats = None
         
+         
+            
         # Cross-modality encoding (Text-Points)
         points_features, text_feats = self.cross_encoder_text_points(
             vis_feats=points_features.transpose(1, 2).contiguous(),
@@ -362,6 +375,9 @@ class BeaUTyDETR(nn.Module):
         points_features = points_features.contiguous()  # (B, F, points)
         end_points["text_memory"] = text_feats
         end_points['seed_features'] = points_features
+
+         
+            
         if self.contrastive_align_loss:
             proj_tokens = F.normalize(
                 self.contrastive_align_projection_text(text_feats), p=2, dim=-1
@@ -382,6 +398,8 @@ class BeaUTyDETR(nn.Module):
                 self.contrastive_align_projection_image(query), p=2, dim=-1
             )
 
+         
+            
         # Proposals (one for each query)
         proposal_center, proposal_size = self.proposal_head(
             cluster_feature,
